@@ -11,3 +11,5 @@ The printer's brain is an [Arduino based board](https://www.adafruit.com/product
 The board is connected to a [thermal printer](https://github.com/adafruit/Adafruit-Thermal-Printer-Library) (also from Adafruit) via one of the available serial ports (`Serial1`).
 
 > `Serial` is mapped to the USB port you connect the Arduino to your computer used for  developing and debugging.
+
+The printer uses the [OAuth Device Grant](https://oauth.net/2/device-flow/) to obtain `access_token` to call the API.
