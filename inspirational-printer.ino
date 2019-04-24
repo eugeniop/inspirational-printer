@@ -1,8 +1,8 @@
 #include "Arduino.h"
-#include "Globals.h"
 #include "Authenticator.h"
 #include "Quotes.h"
 #include "Printer.h"
+#include "HTTPRequest.h"
 
 //ThermalPrinter printer(&Serial1);
 Printer printer;
@@ -29,18 +29,15 @@ void setup() {
 }
 
 void loop(){
-  Debug(F("Press any key"));
-  WaitKey();
-//  if(!auth.IsTokenAvailable()){
-//    int r = auth.Authenticate();
-//    if(r != AUTH_OK){
-//      printer.Print("Authentication failed. Please try again!");
-//    } else {
-//      printer.Print("Your printer is ready!");
-//    }
-//    return;
-//  }
-
-  Debug(F("Getting quote!"));
+  if(!auth.IsTokenAvailable()){
+    int r = auth.Authenticate();
+    if(r != AUTH_OK){
+      printer.Print("Authentication failed. Please try again!");
+    } else {
+      printer.Print("Your printer is ready!");
+    }
+    return;
+  }
   quotes.Print();
+  delay(20000);
 }

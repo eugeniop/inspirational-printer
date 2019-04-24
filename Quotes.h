@@ -33,44 +33,35 @@ class Quotes{
       if(quote){
         delete quote;
       }
-
-      if(request){
-        delete request;
-      }
     }
   
     DynamicJsonDocument * GetQuote(){
-
-      Debug("Connecting");
-    
       if(request->GetStatus() != WL_CONNECTED){
-        Debug("Qoutes. Connecting WiFi");
+        Debug(F("Q.Connecting WiFi"));
         if(request->ConnectWiFi(WIFI_SSID, WIFI_PWD, 3) != WL_CONNECTED ){
-        Debug("Quotes. WiFi Initialization failed");
+        Debug(F("Q. WiFi Init failed"));
         return NULL;
         }
       }
 
-      Debug("Quotes. WiFi initalized");
-      
-      Response * quoteResponse = request->GetJSON("ulifeapps.herokuapp.com", "/quotes/quote/printer", 443, "");
+      Response * quoteResponse = request->GetJSON(F("ulifeapps.herokuapp.com"), F("/quotes/quote/printer"), 443, "");
       request->DisconnectAll();
-      delete request;
      
       if(quoteResponse->statusCode == 403){
         //if 403, then we assumne the access_token is no longer valid
-        Debug("Quotes. API rejected call with 403. Invalidating token");
+        Debug(F("Q. API failed - 403"));
         auth->InvalidateToken();
+        return NULL;
       }
       
       if(quoteResponse->statusCode != 200){
-        Debug("Quotes. API rejected call. Status:" + String(quoteResponse->statusCode));
+        Debug(String(F("Q. API failed. (")) + String(quoteResponse->statusCode) + ")");
         return NULL;
       }
      
       DeserializationError err = deserializeJson(*quote, quoteResponse->data->c_str());
       if(err){
-        Debug(F("Quotes. Failed to parse JSON"));
+        Debug(F("Q. JSON failed"));
         Debug(err.c_str());
         return NULL;
       }

@@ -29,7 +29,7 @@ class Authenticator {
     auto JSON = new DynamicJsonDocument(MAX_AUTHZ_DOC);
     DeserializationError err = deserializeJson(*JSON, input->c_str());
     if(err){
-      Debug(F("ParseJSON. Error:"));
+      Debug(F("A.ParseJSON. Error:"));
       Debug(err.c_str());
       delete JSON;
       return NULL;
@@ -57,12 +57,10 @@ class Authenticator {
   }
 
   int IsTokenAvailable(){
-    return 1;
-    //return (accessToken && accessToken->length());
+    return (accessToken && accessToken->length());
   }
 
   const char * GetAccessToken(){
-    return "";
     if(accessToken){
       return accessToken->c_str();
     }
@@ -77,20 +75,19 @@ class Authenticator {
   }
   
   AUTHENTICATION_STATUS Authenticate(){
-    DeviceFlow df(options);
+    DeviceFlow df(&options, request);
     auto res = df.StartAuthorization();
     if(!res){
-      Debug(F("Authenticate. StartAuthorizationFailed"));
+      Debug(F("Auth. Start Failed"));
       return AUTH_START_FAILED;
     }
   
     if(200 != res->statusCode){
-      Debug(String(F("Authenticate. StartAuthZ failed with code: ")) + String(res->statusCode));
+      Debug(String(F("Auth. Start failed with code: ")) + String(res->statusCode));
       return AUTH_START_FAILED;
     }
 
     auto * authzJSON = ParseJSON(res->data);
-    delete res;
     if(!authzJSON){
       return AUTH_START_FAILED;
     }
@@ -103,7 +100,9 @@ class Authenticator {
     printer->Print(String(user_code));
     printer->PrintQRcode((unsigned char *)verification_url_complete);
     
-    String device_code = (*authzJSON)["device_code"];
+    char device_code[MAX_DEVICE_CODE];
+    strcpy(device_code, (*authzJSON)["device_code"]);
+    
     auto interval = (*authzJSON)["interval"].as<int>() * 1000;  //convert to ms
     delete authzJSON;
 
@@ -114,7 +113,7 @@ class Authenticator {
       res = df.PollAuthorization(device_code);
 
       if(!res){
-        Debug(F("Authenticate. PollAuthorizationFailed."));
+        Debug(F("Auth. Poll failed"));
         hard_retries--;
         if(hard_retries==0){
           return AUTH_TOKEN_FAILED;
@@ -124,7 +123,6 @@ class Authenticator {
         if(200 == res->statusCode){
           //User authentication completed. Extract access_token
           auto * authJSON = ParseJSON(res->data);
-          delete res;
           if(!authJSON){
             return AUTH_TOKEN_FAILED;
           }
@@ -138,7 +136,7 @@ class Authenticator {
         //Anything else from 200 or 403 is a failure. Return with error.
         if(res->statusCode != 403){
           //Anything other than a 403 is a failure
-          Debug("Authenticate. Failed with: " + String(res->statusCode));
+          Debug(String(F("Auth. Failed: ")) + String(res->statusCode));
           return AUTH_TOKEN_FAILED;
         }
   
@@ -155,14 +153,14 @@ class Authenticator {
          
          if(isAuthorizationPending(error)){
           //Just wait
-          //Debug(F("Authenticate. Authorization Pending"));
+          Debug(F("Authenticate. Authorization Pending"));
          } else {
           if(isSlowDown(error)){
-            //Debug(F("Authenticate. Polling too fast"));
+            Debug(F("Authenticate. Polling too fast"));
             interval += 2000; //Add 2 seconds to polling
           } else {
             //Any other error is final
-            //Debug("Authenticate. Error:" + String(error));
+            Debug("Authenticate. Error:" + String(error));
             return AUTH_TOKEN_FAILED;        
           }
         }

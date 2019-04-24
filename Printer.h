@@ -3,7 +3,7 @@
 
 #include <Adafruit_Thermal.h>
 #include "qrcode.h"
-//
+
 //class Printer{
 //  protected:
 //    QRCode qrcode;
@@ -69,6 +69,7 @@
 //    }
 //};  
 
+//Mock Printer that uses the Serial Port.
 class Printer {
     QRCode qrcode;
     uint8_t * qrcodeBytes;
