@@ -91,7 +91,7 @@ class HTTPRequest {
         if(password.length() > 0){
           status = WiFi.begin(ssid, password);
         } else {
-          status = WiFi.begin(WIFI_SSID);  //Passwordless WiFi
+          status = WiFi.begin(ssid);  //Passwordless WiFi
         }
         if(--retries == 0){
           break;

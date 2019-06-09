@@ -44,7 +44,7 @@ class Quotes{
         }
       }
 
-      Response * quoteResponse = request->GetJSON(F("ulifeapps.herokuapp.com"), F("/quotes/quote/printer"), 443, "");
+      Response * quoteResponse = request->GetJSON(F("ulifeapps.herokuapp.com"), F("/quotes/quote/printer"), 443, auth->GetAccessToken());
       request->DisconnectAll();
      
       if(quoteResponse->statusCode == 403){

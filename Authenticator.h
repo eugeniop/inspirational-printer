@@ -6,6 +6,7 @@
 #include "ArduinoJson.h"
 #include "Printer.h"
 #include "HTTPRequest.h"
+#include "activate.h"
 
 enum AUTHENTICATION_STATUS { AUTH_OK, AUTH_START_FAILED, AUTH_TOKEN_FAILED };
 
@@ -94,11 +95,18 @@ class Authenticator {
   
     const char * verification_url_complete = (*authzJSON)["verification_uri_complete"];
     const char * user_code = (*authzJSON)["user_code"];
-  
-    printer->Print("Please visit this URL: " + String(verification_url_complete));
-    printer->Print("If prompted, please enter this code when prompted:");
+
+    printer->SetSize('S');
+    printer->Justify('L');
+    printer->PrintLn("Please visit this URL: " + String(verification_url_complete));
+    printer->Feed(1);
+    printer->PrintLn("If prompted, please enter this code when prompted:");
+    printer->SetSize('L');
+    printer->Justify('C');
     printer->Print(String(user_code));
-    printer->PrintQRcode((unsigned char *)verification_url_complete);
+    printer->Feed(1);
+    printer->PrintBitmap(activate_width, activate_height, activate_data);
+    printer->Feed(4);
     
     char device_code[MAX_DEVICE_CODE];
     strcpy(device_code, (*authzJSON)["device_code"]);

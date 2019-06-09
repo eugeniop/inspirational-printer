@@ -51,10 +51,17 @@ class DeviceFlow {
         //Debug("StartAuthorization. POSTING: " + codeRequest);
         auto * response = request->PostForm(options->authServer, options->authorizationPath, 443, "", codeRequest);
         CloseConnection();
+        
+        if(response == NULL){
+          Debug(F("DF.Start Post failed"));
+          return NULL;
+        }
+        
         if(response->statusCode != 0){
           //Debug(F("StartAuthZ. Request completed"));
           response->Debug();
         }
+        
         return response;
       }
       Debug(F("DF.Start Connection fail"));
@@ -67,6 +74,12 @@ class DeviceFlow {
           Debug(F("DF. Poll. POSTING:"));
           Debug(tokenRequest);
           auto * response = request->PostJSON(options->authServer, options->tokenPath, 443, "", tokenRequest);
+                  
+          if(response == NULL){
+            Debug(F("DF.Poll Post failed"));
+            return NULL;
+          }
+        
           if(response->statusCode != 0){
             response->Debug();
             return response;
